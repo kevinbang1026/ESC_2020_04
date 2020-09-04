@@ -33,6 +33,30 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var locm: LocationManager?
+        if (ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                0
+            )
+        }
+        if (ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                0
+            )
+        }
+
+        locm = getSystemService(LOCATION_SERVICE) as LocationManager
+
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.activity_main)
         transparentStatusAndNavigation()
@@ -62,7 +86,7 @@ class MainActivity : AppCompatActivity() {
                     or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
             Toast.makeText(this, "Updating location...", Toast.LENGTH_SHORT).show()
 
-            val loc = getLoc()
+            val loc = getLoc(locm)
 
             volley(loc)
         }
@@ -72,6 +96,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        val locm = getSystemService(LOCATION_SERVICE) as LocationManager
+
         if (!startup) {
             window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -79,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 
             Toast.makeText(this, "Updating location...", Toast.LENGTH_SHORT).show()
 
-            val loc = getLoc()
+            val loc = getLoc(locm)
 
             volley(loc)
         }
@@ -158,9 +184,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun getLoc(): Location? {
-        val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
+    private fun getLoc(lm: LocationManager): Location? {
         val isGpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val isNetworkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 

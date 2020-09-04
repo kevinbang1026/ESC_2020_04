@@ -24,11 +24,34 @@ class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        if (ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                100
+            )
+        }
+        if (ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                100
+            )
+        }
+
+        val locm = getSystemService(LOCATION_SERVICE) as LocationManager
+
         val intent = Intent(this, MainActivity::class.java)
 
         var reqQue = Volley.newRequestQueue(this)
 
-        val loc = getLoc()
+        val loc = getLoc(locm)
         val lat = loc?.latitude
         val lon = loc?.longitude
 
@@ -63,8 +86,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun getLoc(): Location? {
-        val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    private fun getLoc(lm: LocationManager): Location? {
         val isGpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val isNetworkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
